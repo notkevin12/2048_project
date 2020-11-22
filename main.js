@@ -1,19 +1,18 @@
 let box = document.getElementById('box');
-let reset = document.getElementById('reset');
+let reset = document.getElementById('Reset');
 let overlay = document.getElementById('overlay');
 let gameMessage = document.getElementById('gamemessage');
+let bottom = document.getElementById('bottom');
+let buttons = document.getElementsByClassName('button');
 let cells = new Array;
 let nums = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-let numsMem;
+let numsMem = new Array;
 let gen = true;
+let showUndo = false;
 let isThisLoss = false;
 let victory = false;
-overlay.style.opacity = "0%";
-gameMessage.style.opacity = "0%";
+overlay.style.display = "none";
 
-reset.addEventListener("mouseover", hi);
-reset.addEventListener("mouseout", bye);
-reset.addEventListener("click", resetter);
 document.body.addEventListener("keydown", move);
 
 for (let r = 0; r < 4; r++) {
@@ -32,6 +31,146 @@ setValM(3, 3, 1024);
 setValM(3, 2, 1024);
 update();*/
 setValR();
+setValR();
+storeMem();
+addButtFunc();
+
+function storeMem() {
+    let copy = [[],[],[],[]];
+    let store = false;
+    for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+            copy[r][c] = nums[r][c];
+            if (numsMem.length && (nums[r][c] !== numsMem[numsMem.length - 1][r][c])) {
+                store = true;
+            }
+        }
+    }
+    if (!numsMem.length || store) {
+        console.log("Added to mem");
+        if (numsMem.length === 10) {
+            numsMem.shift();
+        }
+        numsMem.push(copy);
+    }
+    else {
+        console.log("No change");
+    }
+}
+
+function addButtFunc() {
+    //console.log(buttons.length);
+    if (buttons.length) {
+        for (let b = 0; b < buttons.length; b++) {
+            buttons[b].addEventListener("mouseover", hi);
+            buttons[b].addEventListener("mouseout", bye);
+            switch (buttons[b].id) {
+                case "Undoer":
+                    buttons[b].addEventListener("click", undoer);
+                    break;
+                case "Reset":
+                    buttons[b].addEventListener("click", resetter);
+                    break;
+                case "Options":
+                    buttons[b].addEventListener("click", options);
+                    break;
+                case "Timer?":
+                    break;
+                case "Undo?":
+                    buttons[b].addEventListener("click", toggUndo);
+                    break;
+                case "Back":
+                    buttons[b].addEventListener("click", back);
+                    break;
+            }
+            let text = document.createElement("p");
+            text.innerHTML = buttons[b].id;
+            buttons[b].appendChild(text);
+        }
+    }
+    else {
+        alert("Nothing in buttons");
+    }
+}
+
+function undoer() {
+    if (numsMem.length) {
+        for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+                nums[r][c] = numsMem[numsMem.length - 1][r][c];
+            }
+        }
+    }
+    numsMem.pop();
+    update();
+}
+
+function resetter() {
+    console.log("reset");
+    for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+            nums[r][c] = 0;
+        }
+    }
+    gen = true;
+    isThisLoss = false;
+    victory = false;
+    setValR();
+    setValR();
+    update();
+    overlay.style.display = "none";
+    bottom.style.marginTop = "15px";
+}
+
+function options() {
+    while (bottom.firstChild) {
+        bottom.removeChild(bottom.lastChild);
+    }
+    let timer = document.createElement("div");
+    timer.id = "Timer?";
+    timer.className = "button";
+    bottom.appendChild(timer);
+    let undo = document.createElement("div");
+    undo.id = "Undo?";
+    undo.className = "button";
+    bottom.appendChild(undo);
+    let back = document.createElement("div");
+    back.id = "Back";
+    back.className = "button";
+    bottom.appendChild(back);
+    addButtFunc();
+}
+
+function toggUndo() {
+    if (showUndo) {
+        showUndo = false;
+    }
+    else {
+        showUndo = true;
+    }
+}
+
+function back() {
+    while (bottom.firstChild) {
+        bottom.removeChild(bottom.lastChild);
+    }
+    if (showUndo) {
+        let undo = document.createElement("div");
+        undo.id = "Undoer";
+        undo.className = "button";
+        bottom.appendChild(undo);
+    }
+    let newReset = document.createElement("div");
+    newReset.id = "Reset";
+    newReset.className = "button";
+    reset = newReset;
+    bottom.appendChild(newReset);
+    let options = document.createElement("div");
+    options.id = "Options";
+    options.className = "button";
+    bottom.appendChild(options);
+    addButtFunc();
+}
 
 function update() {
     let filled = true;
@@ -104,10 +243,10 @@ function update() {
     }
     if (victory) {
         console.log("2048");
-        overlay.style.opacity = "60%";
-        gameMessage.style.opacity = "100%";
         gameMessage.innerHTML = "YOU WIN";
-        reset.style.bottom = "645px";
+        overlay.style.display = "flex";
+        bottom.style.marginTop = "-391px";
+        reset.firstChild.innerHTML = "New Game";
     }
     else if (filled && !isThisLoss) {
         let isThisLoss = true;
@@ -147,13 +286,12 @@ function update() {
         }
         if (isThisLoss) {
             console.log("Game over");
-            overlay.style.opacity = "60%";
-            gameMessage.style.opacity = "100%";
             gameMessage.innerHTML = "GAME OVER";
-            reset.style.bottom = "645px";
+            overlay.style.display = "flex";
+            bottom.style.marginTop = "-391px";
+            reset.firstChild.innerHTML = "New Game";
         }
     }
-    //printArray();
 }
 
 function setValR() {
@@ -177,9 +315,10 @@ function setValM(x, y, num) {
 
 function move(event) {
     if (!isThisLoss && !victory) {
+        gen = false;
+        storeMem();
         if (event.key === "ArrowUp"|| event.key === "w") {
             console.log("move up");
-            gen = false;
             for (let c = 0; c < 4; c++) {
                 let col = [];
                 for (let r = 0; r < 4; r++) {
@@ -215,7 +354,6 @@ function move(event) {
         }
         if (event.key === "ArrowLeft"|| event.key === "a") {
             console.log("move left");
-            gen = false;
             for (let r = 0; r < 4; r++) {
                 let row = [];
                 for (let c = 0; c < 4; c++) {
@@ -251,7 +389,6 @@ function move(event) {
         }
         if (event.key === "ArrowDown" || event.key === "s") {
             console.log("move down");
-            gen = false;
             for (let c = 0; c < 4; c++) {
                 let col = [];
                 for (let r = 3; r >= 0; r--) {
@@ -287,7 +424,6 @@ function move(event) {
         }
         if (event.key === "ArrowRight"|| event.key === "d") {
             console.log("move right");
-            gen = false;
             for (let r = 0; r < 4; r++) {
                 let row = [];
                 for (let c = 3; c >= 0; c--) {
@@ -324,11 +460,11 @@ function move(event) {
     }
 }
 
-function printArray() { //debug
+function printArray(array) { //debug
     let output = "";
     for (let r = 0; r < 4; r++) {
         for (let c = 0; c < 4; c++) {
-            output += nums[r][c] + "|";
+            output += array[r][c] + "|";
         }
         output += '\n';
     }
@@ -342,23 +478,8 @@ function randTest() { //debug
 }
 
 function hi() {
-    reset.style.transform = "scale(1.1, 1.1)";
+    this.style.transform = "scale(1.1, 1.1)";
 }
 function bye() {
-    reset.style.transform = "scale(1, 1)";
-}
-
-function resetter() {
-    console.log("reset");
-    for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-            nums[r][c] = 0;
-        }
-    }
-    gen = true;
-    setValR();
-    update();
-    overlay.style.opacity = "0%";
-    gameMessage.style.opacity = "0%";
-    reset.style.bottom = "445px";
+    this.style.transform = "scale(1, 1)";
 }

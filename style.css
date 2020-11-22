@@ -10,11 +10,26 @@ body {
 h1 {
     color: aquamarine;
     text-shadow: 2px 2px blueviolet;
-    width: 406px;
     text-align: center;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     margin-bottom: 10px;
     user-select: none;
+}
+
+#header {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    height: 70px;
+    width: 400px;
+}
+
+#record {
+    display: flex;
+    height: 45px;
+    width: 125px;
+    background-color: blueviolet;
+    border-radius: 5px;
 }
 
 #box {
@@ -27,33 +42,39 @@ h1 {
     border-style: solid;
     border-color: blueviolet;
     border-radius: 10px;
+    
 }
 
 #overlay {
-    background-color: rgb(71, 40, 100);
+    display: flex;
+    background-color: rgba(71, 40, 100, 0.6);
     width: 406px;
     height: 406px;
-    bottom: 406px;
     border-radius: 10px;
+    bottom: 406px;
     position: relative;
-    opacity: 60%;
 }
 
-#gamemessage{
+#gamemessage {
     color: white;
     font-size: 50px;
     font-family: fantasy;
-    position: relative;
-    bottom: 655px;
     margin: auto;
     text-shadow: 4px 4px 10px black;
     user-select: none;
 }
 
-#reset {
+#bottom {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 400px;
+    height: 60px;
+    margin-top: 15px;
+}
+
+.button {
     border-style: solid;
-    position: relative;
-    bottom: 445px;
     width: 100px;
     height: 50px;
     text-align: center;
@@ -61,7 +82,7 @@ h1 {
     color: white;
     cursor: pointer;
     user-select: none;
-    box-shadow: 4px 4px 10px black;
+    box-shadow: 4px 4px 10px blueviolet;
 }
 
 .cell {

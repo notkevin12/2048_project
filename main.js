@@ -1,27 +1,28 @@
 let recordContainer = document.getElementById('recordContainer');
 let recordText = document.getElementById('record');
-let record = 0;
 let box = document.getElementById('box');
-let reset = document.getElementById('Reset');
 let overlay = document.getElementById('overlay');
 let gameMessage = document.getElementById('gamemessage');
+let helpMessage = document.getElementById("helpmessage");
 
 let bottom = document.getElementById('bottom');
+let despos = document.getElementById('despos');
+let description = document.getElementById('description');
 let mainButts = new Array;
-
 let optButts = new Array;
-let helpButts = new Array;
+let backButt = new Array;
+let undoEnabled = false;
 
 let nums = new Array;
 let numsMem = new Array;
 let gen = true;
-let showUndo = false;
 let isThisLoss = false;
 let victory = false;
+let paused = false;
+let record = 0;
 
 
 document.body.addEventListener("keydown", move);
-
 for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 4; c++) {
         let cell = document.createElement("div");
@@ -33,13 +34,10 @@ for (let r = 0; r < 4; r++) {
         box.append(cell);
     }
 }
-/*
-setValM(3, 3, 1024);
-setValM(3, 2, 1024);
-update();*/
-initialize();
-initializeButts();
 
+
+initializeDebug();
+initializeButts();
 
 function initialize() {
     nums = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
@@ -48,15 +46,29 @@ function initialize() {
     showUndo = false;
     isThisLoss = false;
     victory = false;
-    record.innerHTML = "Record: 0";
+    paused = false;
     overlay.style.display = "none";
     setValR();
     setValR();
     storeMem();
 }
+
+function initializeDebug() {
+    nums = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    numsMem = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    gen = true;
+    showUndo = false;
+    isThisLoss = false;
+    victory = false;
+    overlay.style.display = "none";
+    setValM(3, 3, 1024);
+    setValM(3, 2, 1024);
+    update();
+}
+
 function initializeButts() {
     let button = buttonTemplate("Reset");
-    button.addEventListener("click", resetter);
+    button.addEventListener("click", reset);
     mainButts.push(button);
     button = buttonTemplate("Options");
     button.addEventListener("click", options);
@@ -67,11 +79,12 @@ function initializeButts() {
     button = buttonTemplate("Timer?");
     optButts.push(button);
     button = buttonTemplate("Undo?");
-    helpButts.push(button);
+    button.addEventListener("click", toggUndo);
+    optButts.push(button);
     button = buttonTemplate("Back");
     button.addEventListener("click", back);
     optButts.push(button);
-    helpButts.push(button);
+    backButt.push(button);
     for (let b = 0; b < mainButts.length; b++) {
         bottom.appendChild(mainButts[b]);
     }
@@ -79,8 +92,8 @@ function initializeButts() {
 function buttonTemplate(id) {
     let button = document.createElement("div");
     let text = document.createElement("p");
-    button.appendChild(text);
     text.innerHTML = id;
+    button.appendChild(text);
     button.id = id;
     button.className = "button";
     button.addEventListener("mouseover", hi);
@@ -111,40 +124,6 @@ function storeMem() {
     }
 }
 
-function addButtFunc() {
-    //console.log(buttons.length);
-    if (buttons.length) {
-        for (let b = 0; b < buttons.length; b++) {
-            buttons[b].addEventListener("mouseover", hi);
-            buttons[b].addEventListener("mouseout", bye);
-            switch (buttons[b].id) {
-                case "Reset":
-                    buttons[b].addEventListener("click", resetter);
-                    break;
-                case "Options":
-                    buttons[b].addEventListener("click", options);
-                    break;
-                case "Help":
-                    buttons[b].addEventListener("click", help);
-                    break;
-                case "Timer?":
-                    break;
-                case "Undo?":
-                    buttons[b].addEventListener("click", toggUndo);
-                    break;
-                case "Back":
-                    buttons[b].addEventListener("click", back);
-                    break;
-            }
-            let text = document.createElement("p");
-            text.innerHTML = buttons[b].id;
-            buttons[b].appendChild(text);
-        }
-    }
-    else {
-        alert("Nothing in buttons");
-    }
-}
 function undoer() {
     if (numsMem.length) {
         for (let r = 0; r < 4; r++) {
@@ -156,21 +135,14 @@ function undoer() {
     numsMem.pop();
     update();
 }
-function resetter() {
+function reset() {
     console.log("reset");
     for (let r = 0; r < 4; r++) {
         for (let c = 0; c < 4; c++) {
             nums[r][c] = 0;
         }
     }
-    gen = true;
-    isThisLoss = false;
-    victory = false;
-    setValR();
-    setValR();
-    update();
-    overlay.style.display = "none";
-    bottom.style.marginTop = "15px";
+    initialize();
 }
 function options() {
     while (bottom.firstChild) {
@@ -181,25 +153,42 @@ function options() {
     }
 }
 function help() {
-    //overlay.style.display = "flex";
+    paused = true;
+    gameMessage.innerHTML = "PLAYING 2048:";
+    helpMessage.innerHTML = "Use your arrow keys or WASD to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 2048!";
+    helpMessage.style.display = "block";
+    overlay.style.display = "flex";
     while (bottom.firstChild) {
         bottom.removeChild(bottom.lastChild);
     }
-    for (let b = 0; b < helpButts.length; b++) {
-        bottom.appendChild(helpButts[b]);
-    }
+    bottom.appendChild(backButt[0]);
 }
-
 function toggUndo() {
-    if (showUndo) {
-        showUndo = false;
+    paused = true;
+    helpMessage.style.display = "block";
+    overlay.style.display = "flex";
+    while (bottom.firstChild) {
+        bottom.removeChild(bottom.lastChild);
+    }
+    bottom.appendChild(backButt[0]);
+    if (undoEnabled) {
+        undoEnabled = false;
+        gameMessage.innerHTML = "UNDO: OFF";
+        helpMessage.style.display = "none";
     }
     else {
-        showUndo = true;
+        undoEnabled = true;
+        gameMessage.innerHTML = "UNDO: ON";
+        helpMessage.style.display = "flex";
+        helpMessage.innerHTML = "Press backspace or the U key to undo up to 10 moves";
     }
 }
-
 function back() {
+    if (paused) {
+        paused = false;
+        helpMessage.style.display = "none";
+        showOverlay();
+    }
     while (bottom.firstChild) {
         bottom.removeChild(bottom.lastChild);
     }
@@ -282,15 +271,8 @@ function update() {
             }
         }
     }
-    if (victory) {
-        console.log("2048");
-        gameMessage.innerHTML = "YOU WIN";
-        overlay.style.display = "flex";
-        bottom.style.marginTop = "-391px";
-        reset.firstChild.innerHTML = "New Game";
-    }
-    else if (filled && !isThisLoss) {
-        let isThisLoss = true;
+    if (filled && !isThisLoss) {
+        isThisLoss = true;
         for (let r = 0; r < 4; r++) {
             for (let c = 0; c < 4; c++) {
                 if (r === 0) {
@@ -325,13 +307,21 @@ function update() {
                 }
             }
         }
-        if (isThisLoss) {
-            console.log("Game over");
-            gameMessage.innerHTML = "GAME OVER";
-            overlay.style.display = "flex";
-            bottom.style.marginTop = "-391px";
-            reset.firstChild.innerHTML = "New Game";
-        }
+    }
+    showOverlay();
+}
+
+function showOverlay() {
+    if (victory) {
+        gameMessage.innerHTML = "YOU WIN";
+        overlay.style.display = "flex";
+    }
+    else if (isThisLoss) {
+        gameMessage.innerHTML = "GAME OVER";
+        overlay.style.display = "flex";
+    }
+    else {
+        overlay.style.display = "none";
     }
 }
 
@@ -355,7 +345,7 @@ function setValM(x, y, num) {
 }
 
 function move(event) {
-    if (!isThisLoss && !victory) {
+    if (!isThisLoss && !victory && !paused) {
         gen = false;
         storeMem();
         if (event.key === "ArrowUp"|| event.key === "w") {
@@ -520,7 +510,31 @@ function randTest() { //debug
 
 function hi() {
     this.style.transform = "scale(1.1, 1.1)";
+    let domRect = this.getBoundingClientRect();
+    description.innerHTML = getDescription(this.id);
+    despos.style.display = "flex";
+    despos.style.left = (domRect.left + domRect.width/2 - description.clientWidth/2) + "px";
 }
 function bye() {
     this.style.transform = "scale(1, 1)";
+    despos.style.display = "none";
+}
+function getDescription(id){
+    switch (id) {
+        case "Reset":
+            return "Starts a new game";
+        case "Options":
+            return "Customize game options";
+        case "Help":
+            return "Get help";
+        case "Timer?":
+            return "Enable/disable timer";
+        case "Undo?":
+            if (undoEnabled) 
+                return "Disable undo function";
+            else
+                return "Enable undo function";
+        case "Back":
+            return "Return to main menu";
+    }
 }

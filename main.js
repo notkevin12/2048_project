@@ -55,41 +55,37 @@ function initialize() {
     storeMem();
 }
 function initializeButts() {
-    let button = buttonTemplate();
-    button.id = "Reset";
+    let button = buttonTemplate("Reset");
     button.addEventListener("click", resetter);
     mainButts.push(button);
-    button = buttonTemplate();
-    button.id = "Options";
+    button = buttonTemplate("Options");
     button.addEventListener("click", options);
     mainButts.push(button);
-    button = buttonTemplate();
-    button.id = "Help";
+    button = buttonTemplate("Help");
     button.addEventListener("click", help);
     mainButts.push(button);
-    button = buttonTemplate();
-    button.id = "Timer?";
+    button = buttonTemplate("Timer?");
     optButts.push(button);
-    button = buttonTemplate();
-    button.id = "Undo?";
+    button = buttonTemplate("Undo?");
     helpButts.push(button);
-    button = buttonTemplate();
-    button.id = "Back";
+    button = buttonTemplate("Back");
     button.addEventListener("click", back);
     optButts.push(button);
     helpButts.push(button);
     for (let b = 0; b < mainButts.length; b++) {
-        let text = document.createElement("p");
-        text.innerHTML = mainButts[b].id;
-        mainButts[b].appendChild(text);
         bottom.appendChild(mainButts[b]);
     }
 }
-function buttonTemplate() {
+function buttonTemplate(id) {
     let button = document.createElement("div");
+    let text = document.createElement("p");
+    button.appendChild(text);
+    text.innerHTML = id;
+    button.id = id;
     button.className = "button";
     button.addEventListener("mouseover", hi);
     button.addEventListener("mouseout", bye);
+    button.addEventListener("click", bye);
     return button;
 }
 function storeMem() {
@@ -181,9 +177,6 @@ function options() {
         bottom.removeChild(bottom.lastChild);
     }
     for (let b = 0; b < optButts.length; b++) {
-        let text = document.createElement("p");
-        text.innerHTML = optButts[b].id;
-        optButts[b].appendChild(text);
         bottom.appendChild(optButts[b]);
     }
 }
@@ -193,9 +186,6 @@ function help() {
         bottom.removeChild(bottom.lastChild);
     }
     for (let b = 0; b < helpButts.length; b++) {
-        let text = document.createElement("p");
-        text.innerHTML = helpButts[b].id;
-        helpButts[b].appendChild(text);
         bottom.appendChild(helpButts[b]);
     }
 }
@@ -214,9 +204,6 @@ function back() {
         bottom.removeChild(bottom.lastChild);
     }
     for (let b = 0; b < mainButts.length; b++) {
-        let text = document.createElement("p");
-        text.innerHTML = mainButts[b].id;
-        mainButts[b].appendChild(text);
         bottom.appendChild(mainButts[b]);
     }
 }

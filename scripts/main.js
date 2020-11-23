@@ -1,26 +1,18 @@
 let recordContainer = document.getElementById('recordContainer');
-let recordText = document.getElementById('record');
-let box = document.getElementById('box');
-let overlay = document.getElementById('overlay');
-let gameMessage = document.getElementById('gamemessage');
-let helpMessage = document.getElementById("helpmessage");
-
-let bottom = document.getElementById('bottom');
-let despos = document.getElementById('despos');
-let description = document.getElementById('description');
-let mainButts = new Array;
-let optButts = new Array;
-let backButt = new Array;
-let undoEnabled = false;
+    recordText = document.getElementById('record');
+    box = document.getElementById('box');
+    overlay = document.getElementById('overlay');
+    gameMessage = document.getElementById('gamemessage');
+    helpMessage = document.getElementById("helpmessage");
+    timerId = setInterval(() => console.log("tick"), 1000);
 
 let nums = new Array;
-let numsMem = new Array;
-let gen = true;
-let isThisLoss = false;
-let victory = false;
-let paused = false;
-let record = 0;
-
+    numsMem = new Array;
+    gen = true;
+    isThisLoss = false;
+    victory = false;
+    paused = false;
+    record = 0;
 
 document.body.addEventListener("keydown", move);
 for (let r = 0; r < 4; r++) {
@@ -35,11 +27,12 @@ for (let r = 0; r < 4; r++) {
     }
 }
 
-
-initializeDebug();
-initializeButts();
+clearInterval(timerId);
+initialize();
 
 function initialize() {
+    //clearInterval(timerId);
+    //timerId = setInterval(() => console.log("tick"), 1000);
     nums = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     numsMem = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     gen = true;
@@ -65,42 +58,6 @@ function initializeDebug() {
     setValM(3, 2, 1024);
     update();
 }
-
-function initializeButts() {
-    let button = buttonTemplate("Reset");
-    button.addEventListener("click", reset);
-    mainButts.push(button);
-    button = buttonTemplate("Options");
-    button.addEventListener("click", options);
-    mainButts.push(button);
-    button = buttonTemplate("Help");
-    button.addEventListener("click", help);
-    mainButts.push(button);
-    button = buttonTemplate("Timer?");
-    optButts.push(button);
-    button = buttonTemplate("Undo?");
-    button.addEventListener("click", toggUndo);
-    optButts.push(button);
-    button = buttonTemplate("Back");
-    button.addEventListener("click", back);
-    optButts.push(button);
-    backButt.push(button);
-    for (let b = 0; b < mainButts.length; b++) {
-        bottom.appendChild(mainButts[b]);
-    }
-}
-function buttonTemplate(id) {
-    let button = document.createElement("div");
-    let text = document.createElement("p");
-    text.innerHTML = id;
-    button.appendChild(text);
-    button.id = id;
-    button.className = "button";
-    button.addEventListener("mouseover", hi);
-    button.addEventListener("mouseout", bye);
-    button.addEventListener("click", bye);
-    return button;
-}
 function storeMem() {
     let copy = [[],[],[],[]];
     let store = false;
@@ -123,7 +80,6 @@ function storeMem() {
         console.log("No change");
     }
 }
-
 function undoer() {
     if (numsMem.length) {
         for (let r = 0; r < 4; r++) {
@@ -135,68 +91,6 @@ function undoer() {
     numsMem.pop();
     update();
 }
-function reset() {
-    console.log("reset");
-    for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-            nums[r][c] = 0;
-        }
-    }
-    initialize();
-}
-function options() {
-    while (bottom.firstChild) {
-        bottom.removeChild(bottom.lastChild);
-    }
-    for (let b = 0; b < optButts.length; b++) {
-        bottom.appendChild(optButts[b]);
-    }
-}
-function help() {
-    paused = true;
-    gameMessage.innerHTML = "PLAYING 2048:";
-    helpMessage.innerHTML = "Use your arrow keys or WASD to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 2048!";
-    helpMessage.style.display = "block";
-    overlay.style.display = "flex";
-    while (bottom.firstChild) {
-        bottom.removeChild(bottom.lastChild);
-    }
-    bottom.appendChild(backButt[0]);
-}
-function toggUndo() {
-    paused = true;
-    helpMessage.style.display = "block";
-    overlay.style.display = "flex";
-    while (bottom.firstChild) {
-        bottom.removeChild(bottom.lastChild);
-    }
-    bottom.appendChild(backButt[0]);
-    if (undoEnabled) {
-        undoEnabled = false;
-        gameMessage.innerHTML = "UNDO: OFF";
-        helpMessage.style.display = "none";
-    }
-    else {
-        undoEnabled = true;
-        gameMessage.innerHTML = "UNDO: ON";
-        helpMessage.style.display = "flex";
-        helpMessage.innerHTML = "Press backspace or the U key to undo up to 10 moves";
-    }
-}
-function back() {
-    if (paused) {
-        paused = false;
-        helpMessage.style.display = "none";
-        showOverlay();
-    }
-    while (bottom.firstChild) {
-        bottom.removeChild(bottom.lastChild);
-    }
-    for (let b = 0; b < mainButts.length; b++) {
-        bottom.appendChild(mainButts[b]);
-    }
-}
-
 function update() {
     let filled = true;
     for (let r = 0; r < 4; r++) {
@@ -310,7 +204,6 @@ function update() {
     }
     showOverlay();
 }
-
 function showOverlay() {
     if (victory) {
         gameMessage.innerHTML = "YOU WIN";
@@ -324,7 +217,6 @@ function showOverlay() {
         overlay.style.display = "none";
     }
 }
-
 function setValR() {
     if (gen) {
         let randX = Math.floor(Math.random() * 4);
@@ -339,11 +231,9 @@ function setValR() {
         }
     }
 }
-
 function setValM(x, y, num) {
     nums[x][y] = num;
 }
-
 function move(event) {
     if (!isThisLoss && !victory && !paused) {
         gen = false;
@@ -490,7 +380,6 @@ function move(event) {
         }
     }
 }
-
 function printArray(array) { //debug
     let output = "";
     for (let r = 0; r < 4; r++) {
@@ -501,40 +390,10 @@ function printArray(array) { //debug
     }
     console.log(output);
 }
-
 function randTest() { //debug
     for (let i = 0; i < 16; i++) {
         setValR();
     }
 }
 
-function hi() {
-    this.style.transform = "scale(1.1, 1.1)";
-    let domRect = this.getBoundingClientRect();
-    description.innerHTML = getDescription(this.id);
-    despos.style.display = "flex";
-    despos.style.left = (domRect.left + domRect.width/2 - description.clientWidth/2) + "px";
-}
-function bye() {
-    this.style.transform = "scale(1, 1)";
-    despos.style.display = "none";
-}
-function getDescription(id){
-    switch (id) {
-        case "Reset":
-            return "Starts a new game";
-        case "Options":
-            return "Customize game options";
-        case "Help":
-            return "Get help";
-        case "Timer?":
-            return "Enable/disable timer";
-        case "Undo?":
-            if (undoEnabled) 
-                return "Disable undo function";
-            else
-                return "Enable undo function";
-        case "Back":
-            return "Return to main menu";
-    }
-}
+

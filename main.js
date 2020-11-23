@@ -1,17 +1,24 @@
+let recordContainer = document.getElementById('recordContainer');
+let recordText = document.getElementById('record');
+let record = 0;
 let box = document.getElementById('box');
 let reset = document.getElementById('Reset');
 let overlay = document.getElementById('overlay');
 let gameMessage = document.getElementById('gamemessage');
+
 let bottom = document.getElementById('bottom');
-let buttons = document.getElementsByClassName('button');
-let cells = new Array;
-let nums = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+let mainButts = new Array;
+
+let optButts = new Array;
+let helpButts = new Array;
+
+let nums = new Array;
 let numsMem = new Array;
 let gen = true;
 let showUndo = false;
 let isThisLoss = false;
 let victory = false;
-overlay.style.display = "none";
+
 
 document.body.addEventListener("keydown", move);
 
@@ -30,11 +37,61 @@ for (let r = 0; r < 4; r++) {
 setValM(3, 3, 1024);
 setValM(3, 2, 1024);
 update();*/
-setValR();
-setValR();
-storeMem();
-addButtFunc();
+initialize();
+initializeButts();
 
+
+function initialize() {
+    nums = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    numsMem = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    gen = true;
+    showUndo = false;
+    isThisLoss = false;
+    victory = false;
+    record.innerHTML = "Record: 0";
+    overlay.style.display = "none";
+    setValR();
+    setValR();
+    storeMem();
+}
+function initializeButts() {
+    let button = buttonTemplate();
+    button.id = "Reset";
+    button.addEventListener("click", resetter);
+    mainButts.push(button);
+    button = buttonTemplate();
+    button.id = "Options";
+    button.addEventListener("click", options);
+    mainButts.push(button);
+    button = buttonTemplate();
+    button.id = "Help";
+    button.addEventListener("click", help);
+    mainButts.push(button);
+    button = buttonTemplate();
+    button.id = "Timer?";
+    optButts.push(button);
+    button = buttonTemplate();
+    button.id = "Undo?";
+    helpButts.push(button);
+    button = buttonTemplate();
+    button.id = "Back";
+    button.addEventListener("click", back);
+    optButts.push(button);
+    helpButts.push(button);
+    for (let b = 0; b < mainButts.length; b++) {
+        let text = document.createElement("p");
+        text.innerHTML = mainButts[b].id;
+        mainButts[b].appendChild(text);
+        bottom.appendChild(mainButts[b]);
+    }
+}
+function buttonTemplate() {
+    let button = document.createElement("div");
+    button.className = "button";
+    button.addEventListener("mouseover", hi);
+    button.addEventListener("mouseout", bye);
+    return button;
+}
 function storeMem() {
     let copy = [[],[],[],[]];
     let store = false;
@@ -65,14 +122,14 @@ function addButtFunc() {
             buttons[b].addEventListener("mouseover", hi);
             buttons[b].addEventListener("mouseout", bye);
             switch (buttons[b].id) {
-                case "Undoer":
-                    buttons[b].addEventListener("click", undoer);
-                    break;
                 case "Reset":
                     buttons[b].addEventListener("click", resetter);
                     break;
                 case "Options":
                     buttons[b].addEventListener("click", options);
+                    break;
+                case "Help":
+                    buttons[b].addEventListener("click", help);
                     break;
                 case "Timer?":
                     break;
@@ -92,7 +149,6 @@ function addButtFunc() {
         alert("Nothing in buttons");
     }
 }
-
 function undoer() {
     if (numsMem.length) {
         for (let r = 0; r < 4; r++) {
@@ -104,7 +160,6 @@ function undoer() {
     numsMem.pop();
     update();
 }
-
 function resetter() {
     console.log("reset");
     for (let r = 0; r < 4; r++) {
@@ -121,24 +176,28 @@ function resetter() {
     overlay.style.display = "none";
     bottom.style.marginTop = "15px";
 }
-
 function options() {
     while (bottom.firstChild) {
         bottom.removeChild(bottom.lastChild);
     }
-    let timer = document.createElement("div");
-    timer.id = "Timer?";
-    timer.className = "button";
-    bottom.appendChild(timer);
-    let undo = document.createElement("div");
-    undo.id = "Undo?";
-    undo.className = "button";
-    bottom.appendChild(undo);
-    let back = document.createElement("div");
-    back.id = "Back";
-    back.className = "button";
-    bottom.appendChild(back);
-    addButtFunc();
+    for (let b = 0; b < optButts.length; b++) {
+        let text = document.createElement("p");
+        text.innerHTML = optButts[b].id;
+        optButts[b].appendChild(text);
+        bottom.appendChild(optButts[b]);
+    }
+}
+function help() {
+    //overlay.style.display = "flex";
+    while (bottom.firstChild) {
+        bottom.removeChild(bottom.lastChild);
+    }
+    for (let b = 0; b < helpButts.length; b++) {
+        let text = document.createElement("p");
+        text.innerHTML = helpButts[b].id;
+        helpButts[b].appendChild(text);
+        bottom.appendChild(helpButts[b]);
+    }
 }
 
 function toggUndo() {
@@ -154,22 +213,12 @@ function back() {
     while (bottom.firstChild) {
         bottom.removeChild(bottom.lastChild);
     }
-    if (showUndo) {
-        let undo = document.createElement("div");
-        undo.id = "Undoer";
-        undo.className = "button";
-        bottom.appendChild(undo);
+    for (let b = 0; b < mainButts.length; b++) {
+        let text = document.createElement("p");
+        text.innerHTML = mainButts[b].id;
+        mainButts[b].appendChild(text);
+        bottom.appendChild(mainButts[b]);
     }
-    let newReset = document.createElement("div");
-    newReset.id = "Reset";
-    newReset.className = "button";
-    reset = newReset;
-    bottom.appendChild(newReset);
-    let options = document.createElement("div");
-    options.id = "Options";
-    options.className = "button";
-    bottom.appendChild(options);
-    addButtFunc();
 }
 
 function update() {
@@ -192,6 +241,7 @@ function update() {
                     cell[0].innerHTML = nums[r][c];
                     cell[0].style.fontSize = "60px";
                     cell[0].style.backgroundColor = "#1affb2";
+                    recordContainer.style.display = "flex";
                     break;
                 case 16:
                     cell[0].innerHTML = nums[r][c];
@@ -238,6 +288,10 @@ function update() {
                     filled = false;
                     cell[0].innerHTML = null;
                     cell[0].style.backgroundColor = "indigo";
+            }
+            if (record < nums[r][c]) {
+                record = nums[r][c];
+                recordText.innerHTML = "Record: " + record;
             }
         }
     }

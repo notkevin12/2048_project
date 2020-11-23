@@ -1,9 +1,11 @@
-let bottom = document.getElementById('bottom');
+let timerBox = document.getElementById('timerbox');
+    bottom = document.getElementById('bottom');
     despos = document.getElementById('despos');
     description = document.getElementById('description');
     mainButts = new Array;
     optButts = new Array;
     backButt = new Array;
+    timerEnabled = false;
     undoEnabled = false;
     
 clearInterval(timerId);
@@ -65,12 +67,15 @@ function getDescription(id){
         case "Help":
             return "Get help";
         case "Timer?":
-            return "Enable/disable timer";
+            if (timerEnabled)
+                return "Disable timer";
+            else
+                return "Enable timer";
         case "Undo?":
             if (undoEnabled) 
-                return "Disable undo function";
+                return "Disable undo";
             else
-                return "Enable undo function";
+                return "Enable undo";
         case "Back":
             return "Return to main menu";
     }
@@ -104,7 +109,26 @@ function help() {
     bottom.appendChild(backButt[0]);
 }
 function toggTimer() {
-    
+    paused = true;
+    helpMessage.style.display = "block";
+    overlay.style.display = "flex";
+    while (bottom.firstChild) {
+        bottom.removeChild(bottom.lastChild);
+    }
+    bottom.appendChild(backButt[0]);
+    if (timerEnabled) {
+        timerEnabled = false;
+        gameMessage.innerHTML = "TIMER: OFF";
+        helpMessage.style.display = "none";
+        timerBox.style.display = "none";
+    }
+    else {
+        timerEnabled = true;
+        gameMessage.innerHTML = "TIMER: ON";
+        helpMessage.innerHTML = "Your game will be timed";
+        helpMessage.style.display = "flex";
+        timerBox.style.display = "flex";
+    }
 }
 function toggUndo() {
     paused = true;
@@ -122,8 +146,8 @@ function toggUndo() {
     else {
         undoEnabled = true;
         gameMessage.innerHTML = "UNDO: ON";
-        helpMessage.style.display = "flex";
         helpMessage.innerHTML = "Press backspace or the U key to undo up to 10 moves";
+        helpMessage.style.display = "flex";
     }
 }
 function back() {
@@ -137,5 +161,8 @@ function back() {
     }
     for (let b = 0; b < mainButts.length; b++) {
         bottom.appendChild(mainButts[b]);
+    }
+    if (timerEnabled) {
+        initialize();
     }
 }

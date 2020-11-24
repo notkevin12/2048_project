@@ -98,7 +98,7 @@ function storeMem() {
         }
     }
     if (!numsMem.length || store) {
-        if (numsMem.length === 10) {
+        if (numsMem.length === 11) {
             numsMem.shift();
         }
         numsMem.push(copy);
@@ -403,7 +403,8 @@ function undo(event) {
                     nums[r][c] = numsMem[numsMem.length - 1][r][c];
                 }
             }
-            numsMem.pop();
+            if (numsMem.length > 1)
+                numsMem.pop();
             update();
         }
     }

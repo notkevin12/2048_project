@@ -5,10 +5,7 @@ let timer = document.getElementById('timer');
     gameMessage = document.getElementById('gamemessage');
     helpMessage = document.getElementById("helpmessage");
     timerId = setInterval(tick, 1000);
-    timerActive = false;
-    seconds = 0;
-    minutes = 0;
-    hours = 0;
+    time = [0, ':', 0, ":", 0];
 
 let nums = new Array;
     numsMem = new Array;
@@ -31,12 +28,9 @@ for (let r = 0; r < 4; r++) {
     }
 }
 
-clearInterval(timerId);
 initialize();
 
 function initialize() {
-    //clearInterval(timerId);
-    //timerId = setInterval(() => console.log("tick"), 1000);
     nums = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     numsMem = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     gen = true;
@@ -45,60 +39,50 @@ function initialize() {
     victory = false;
     paused = false;
     overlay.style.display = "none";
+    time = [0, ':', 0, ':', 0];
+    timer.innerHTML = "00:00:00";
     setValR();
     setValR();
-    storeMem();
-}
-function initializeDebug() {
-    nums = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-    numsMem = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-    gen = true;
-    showUndo = false;
-    isThisLoss = false;
-    victory = false;
-    overlay.style.display = "none";
-    setValM(3, 3, 1024);
+    /*setValM(3, 3, 1024);
     setValM(3, 2, 1024);
-    update();
+    update();*/
 }
 
 function tick() {
     if (timerEnabled && !victory && !isThisLoss && !paused) {
         let output = "";
-        seconds++;
-        if (seconds > 9) {
-            output = ":0" + seconds;
+        time[4]++;
+        if (time[4] === 60) {
+            time[4] = 0;
+            time[2]++;
+            if (time[2] === 60) {
+                time[2] = 0;
+                time[0]++;
+                if (time[0] === 24) {
+                    day();
+                }
+            }
         }
-        else if (seconds === 60) {
-            seconds = 0;
-            output = ":00";
-            minutes++;
-        }
-        else {
-            output = ":" + seconds + output;
-        }
-        if (minutes > 9) {
-            output = ":0" + minutes + output;
-        }
-        else if (minutes === 60) {
-            minutes = 0;
-            output = ":00" + output;
-            hours++;
-        }
-        else {
-            output = ":" + minutes + output;
-        }
-        if (hours > 9) {
-            output = "0" + hours + output;
-        }
-        else if (hours === 24) {
-            output = "DAY";
-        }
-        else {
-            output = hours + output;
+        for (let i = 0; i < 5; i++) {
+            if (i % 2 === 0 && time[i] < 10) {
+                output += "0" + time[i];
+            }
+            else {
+                output += time[i];
+            }
         }
         timer.innerHTML = output;
     }
+}
+function day() {
+    paused = true;
+    helpMessage.style.display = "block";
+    overlay.style.display = "flex";
+    while (bottom.firstChild) {
+        bottom.removeChild(bottom.lastChild);
+    }
+    gameMessage.innerHTML = "STOP NOW";
+    helpMessage.style.display = "YOU HAVE SPENT AN ENTIRE DAY PLAYING THIS GAME";
 }
 function storeMem() {
     let copy = [[],[],[],[]];
@@ -247,12 +231,10 @@ function update() {
 }
 function showOverlay() {
     if (victory) {
-        timerId.clearInterval();
         gameMessage.innerHTML = "YOU WIN";
         overlay.style.display = "flex";
     }
     else if (isThisLoss) {
-        timerId.clearInterval();
         gameMessage.innerHTML = "GAME OVER";
         overlay.style.display = "flex";
     }
@@ -282,7 +264,6 @@ function move(event) {
         gen = false
         if (event.key === "ArrowUp"|| event.key === "w") {
             console.log("move up");
-            timerActive();
             for (let c = 0; c < 4; c++) {
                 let col = [];
                 for (let r = 0; r < 4; r++) {
@@ -318,7 +299,6 @@ function move(event) {
         }
         if (event.key === "ArrowLeft"|| event.key === "a") {
             console.log("move left");
-            timerActive();
             for (let r = 0; r < 4; r++) {
                 let row = [];
                 for (let c = 0; c < 4; c++) {
@@ -354,7 +334,6 @@ function move(event) {
         }
         if (event.key === "ArrowDown" || event.key === "s") {
             console.log("move down");
-            timerActive();
             for (let c = 0; c < 4; c++) {
                 let col = [];
                 for (let r = 3; r >= 0; r--) {
@@ -390,7 +369,6 @@ function move(event) {
         }
         if (event.key === "ArrowRight"|| event.key === "d") {
             console.log("move right");
-            timerActive();
             for (let r = 0; r < 4; r++) {
                 let row = [];
                 for (let c = 3; c >= 0; c--) {
@@ -424,12 +402,6 @@ function move(event) {
             }
             setValR();
         }
-    }
-}
-function timerActive() {
-    if (timerEnabled && !timerActive) {
-        timerId = setInterval(tick, 1000);
-        timerActive = true;
     }
 }
 function printArray(array) { //debug

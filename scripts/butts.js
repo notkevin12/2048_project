@@ -8,7 +8,6 @@ let timerBox = document.getElementById('timerbox');
     timerEnabled = false;
     undoEnabled = false;
     
-clearInterval(timerId);
 initializeButts();
 
 function initializeButts() {
@@ -125,7 +124,7 @@ function toggTimer() {
     else {
         timerEnabled = true;
         gameMessage.innerHTML = "TIMER: ON";
-        helpMessage.innerHTML = "Your game will be timed";
+        helpMessage.innerHTML = "New game will be timed";
         helpMessage.style.display = "flex";
         timerBox.style.display = "flex";
     }

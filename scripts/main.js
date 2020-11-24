@@ -6,6 +6,7 @@ let timer = document.getElementById('timer');
     helpMessage = document.getElementById("helpmessage");
     timerId = setInterval(tick, 1000);
     time = [0, ':', 0, ":", 0];
+    timerActive = false;
 
 let nums = new Array;
     numsMem = new Array;
@@ -16,6 +17,7 @@ let nums = new Array;
     record = 4;
 
 document.body.addEventListener("keydown", move);
+document.body.addEventListener("keydown", undo);
 for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 4; c++) {
         let cell = document.createElement("div");
@@ -32,7 +34,7 @@ initialize();
 
 function initialize() {
     nums = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-    numsMem = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    numsMem = [];
     gen = true;
     showUndo = false;
     isThisLoss = false;
@@ -41,15 +43,15 @@ function initialize() {
     overlay.style.display = "none";
     time = [0, ':', 0, ':', 0];
     timer.innerHTML = "00:00:00";
+    timerActive = false;
     setValR();
     setValR();
     /*setValM(3, 3, 1024);
     setValM(3, 2, 1024);
     update();*/
 }
-
 function tick() {
-    if (timerEnabled && !victory && !isThisLoss && !paused) {
+    if (timerEnabled && timerActive && !victory && !isThisLoss && !paused) {
         let output = "";
         time[4]++;
         if (time[4] === 60) {
@@ -81,12 +83,12 @@ function day() {
     while (bottom.firstChild) {
         bottom.removeChild(bottom.lastChild);
     }
-    gameMessage.innerHTML = "STOP NOW";
-    helpMessage.style.display = "YOU HAVE SPENT AN ENTIRE DAY PLAYING THIS GAME";
+    gameMessage.innerHTML = "GO OUTSIDE";
+    helpMessage.innerHTML = "YOU HAVE SPENT AN ENTIRE DAY PLAYING THIS GAME";
 }
 function storeMem() {
     let copy = [[],[],[],[]];
-    let store = false;
+        store = false;
     for (let r = 0; r < 4; r++) {
         for (let c = 0; c < 4; c++) {
             copy[r][c] = nums[r][c];
@@ -96,26 +98,11 @@ function storeMem() {
         }
     }
     if (!numsMem.length || store) {
-        console.log("Added to mem");
         if (numsMem.length === 10) {
             numsMem.shift();
         }
         numsMem.push(copy);
     }
-    else {
-        console.log("No change");
-    }
-}
-function undoer() {
-    if (numsMem.length) {
-        for (let r = 0; r < 4; r++) {
-            for (let c = 0; c < 4; c++) {
-                nums[r][c] = numsMem[numsMem.length - 1][r][c];
-            }
-        }
-    }
-    numsMem.pop();
-    update();
 }
 function update() {
     let filled = true;
@@ -261,9 +248,13 @@ function setValM(x, y, num) {
 }
 function move(event) {
     if (!isThisLoss && !victory && !paused) {
+        if (gen && validKey(event.key)) {
+            storeMem();
+            timerActive = true;
+        }
         gen = false
         if (event.key === "ArrowUp"|| event.key === "w") {
-            console.log("move up");
+            //console.log("move up");
             for (let c = 0; c < 4; c++) {
                 let col = [];
                 for (let r = 0; r < 4; r++) {
@@ -298,7 +289,7 @@ function move(event) {
             setValR();
         }
         if (event.key === "ArrowLeft"|| event.key === "a") {
-            console.log("move left");
+            //console.log("move left");
             for (let r = 0; r < 4; r++) {
                 let row = [];
                 for (let c = 0; c < 4; c++) {
@@ -333,7 +324,7 @@ function move(event) {
             setValR();
         }
         if (event.key === "ArrowDown" || event.key === "s") {
-            console.log("move down");
+            //console.log("move down");
             for (let c = 0; c < 4; c++) {
                 let col = [];
                 for (let r = 3; r >= 0; r--) {
@@ -368,7 +359,7 @@ function move(event) {
             setValR();
         }
         if (event.key === "ArrowRight"|| event.key === "d") {
-            console.log("move right");
+            //console.log("move right");
             for (let r = 0; r < 4; r++) {
                 let row = [];
                 for (let c = 3; c >= 0; c--) {
@@ -403,6 +394,25 @@ function move(event) {
             setValR();
         }
     }
+}
+function undo(event) {
+    if (undoEnabled && numsMem.length) {
+        if (event.key === "Backspace"|| event.key === "u") {
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    nums[r][c] = numsMem[numsMem.length - 1][r][c];
+                }
+            }
+            numsMem.pop();
+            update();
+        }
+    }
+}
+function validKey(string) {
+    if (string === "ArrowUp"|| string === "ArrowDown" || string === "ArrowRight" || string === "ArrowLeft" || string === "w" || string === "a" || string === "s" || string === "d") {
+        return true;
+    }
+    return false;
 }
 function printArray(array) { //debug
     let output = "";
